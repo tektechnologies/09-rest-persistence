@@ -1,5 +1,5 @@
 'use strict';
-const storage = require('../lib/storage');
+const Storage = require('../lib/storage');
 const cowStore = new Storage('cows');
 
 class Cow{

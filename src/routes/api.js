@@ -1,11 +1,30 @@
 'use strict';
 
 const router = require('../lib/router');
-const cowsay = require('cowsay');
-router.get('/api/cowsay', (req, res) => {
-  json(res, 
-    { content: cowsay.say(req.query) },
-  );
+//const cowsay = require('cowsay');
+const Cow = require('../models/cows');
+
+router.get('/api/cows', (req, res) => {
+  if (req.query.id) {
+    return Cow.findById(req.query.id)
+      .then(cows => {
+        json(res, cows);
+      });
+  }
+
+  Cow.fetchAll()
+    .then(cows => {
+      json(res, cows);
+    });
+});
+
+
+router.post('/api/cows', (req, res) => {
+  var newCow = new Cow(req.body);
+  newCow.save()
+    .then(saved => {
+      json(res, saved);
+    });
 });
 
 

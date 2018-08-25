@@ -1,5 +1,4 @@
 'use strict';
-
 const uuid = require('uuid/v4');
 
 class MemoryStorage {
@@ -14,7 +13,6 @@ class MemoryStorage {
         `Failed to save non-object in schema "${this.schema}"`
       ));
     }
-
     document.id = uuid();
     this.data[document.id] = document;
     console.log('saved', this);

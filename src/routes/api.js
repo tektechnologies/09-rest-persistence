@@ -1,17 +1,17 @@
 'use strict';
 
 const router = require('../lib/router');
-
-router.get('/api/notes', (req, res) => {
-  json(res, [
-    { id: 1 },
-  ]);
+const cowsay = require('cowsay');
+router.get('/api/cowsay', (req, res) => {
+  json(res, 
+    { content: cowsay.say(req.query) },
+  );
 });
 
 
-router.delete('/api/notes', (req, res) => {
+router.delete('/api/cowsay', (req, res) => {
   json(res, {
-    message: `ID ${req.query.id} was deleted`,
+    message: `Cow number ${req.query.id} is deleted`,
   });
 });
 
@@ -21,3 +21,4 @@ function json(res, object) {
   res.write(JSON.stringify(object));
   res.end();
 }
+

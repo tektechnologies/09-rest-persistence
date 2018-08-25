@@ -1,10 +1,11 @@
 'use strict';
 
 const request = require('supertest');
-const server = require('../src/app');
 const app = require('../src/app');
+const Cow = require('../src/models/cows');
 
 describe('app', () => {
+
   it('responds with 404 for unknown path', () => {
     return request(app)
       .get('/404')
@@ -17,7 +18,8 @@ describe('app', () => {
       .get('/')
       .expect(200)
       .expect('Content-Type', 'text/html')
-      .expect(response => {expect(response.text[0]).toBe('<');
+      .expect(response => {
+        expect(response.text[0]).toBe('<');
       });
   });
 
@@ -40,17 +42,55 @@ describe('app', () => {
         expect(response.body.message).toMatch('Hello, Craig!');
       });
   });
+
+
   describe('api routes', () => {
     it('can get /api/cowsay', () => {
+      var cows = [
+        new Cow({ title: 'test 1', content: 'Peter' }),
+        new Cow({ title: 'test 2', content: 'Paul' }),
+        new Cow({ title: 'test 3', content: 'Mary' }),
+      ];
+
+      return Promise.all(
+        cows.map(cow => cows.save())
+      ).then(savedCows => {
+        return request(app)
+          .get('/api/cows')
+          .expect(200)
+          .expect('Content-Type', 'application/json')
+          .expect(savedCows);
+      });
+    });
+
+    it('can get /api/cows?id=...', () => {
+      var cow = new Cow({ title: 'save me', content: 'please' });
+
+      return cow.save()
+        .then(saved => {
+          return request(app)
+            .get(`/api/notes?id=${saved.id}`)
+            .expect(200)
+            .expect('Content-Type', 'application/json')
+            .expect(saved);
+        });
+    });
+
+    it('can POST /api/notes to create cow', () => {
       return request(app)
-        .get('/api/cowsay?text=hi')
+        .post('/api/cows')
+        .send({ title: 'Testing', content: 'It works!' })
         .expect(200)
         .expect('Content-Type', 'application/json')
         .expect(response => {
           expect(response.body).toBeDefined();
-          expect(response.body.content).toMatch('hi');
+          expect(response.body.id).toBeDefined();
+          expect(response.body.title).toBe('Testing');
+          expect(response.body.content).toBe('It works!');
         });
     });
+
+    
 
     it('can delete /api/cowsay=deleteme', () => {
       return request(app)
@@ -60,6 +100,4 @@ describe('app', () => {
         .expect({ message: `Cow number 1 is deleted` });
     });
   });
-
-
 });//closes describe app

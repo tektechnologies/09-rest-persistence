@@ -1,80 +1,65 @@
 'use strict';
 
-const os = require('os');
-const fs = require('fs');
-const readFilePromise = promisify(fs.readFile);
-const readdirPromise = promisify(fs.readdir);
-const writeFilePromise = promisify(fs.writeFile);
-const uuid = require('uuid/v4');
+const Storage = require('../../../src/lib/storage/memory');
 
+describe('MemoryStorage', () => {
+  it('rejects saving non-object', () => {
+    var store = new Storage('test');
 
-class FilesystemStorage {
-  constructor(schema){
+    return expect(store.save('oops'))
+      .rejects.toThrow('schema "test"');
+  });
 
-    this.schema = schema;
+  it('can save an object', () => {
+    var store = new Storage('test');
 
-    this.path = `${os.tmpdir}/${this.schema}`;
-    console.log({path: this.path});
-    try{
-      fs.mkdirSync(this.path);
-    }catch (err){
-      if(err.code !== 'EEXIST')
-        throw err;
-    }
-  }
+    return store.save({ name: 'Craig' })
+      .then(saved => {
+        
+        expect(saved).toBeDefined();
+        expect(saved.id).toBeDefined();
+        expect(saved.name).toBe('Craig');
 
-  save(document){
-    if(typeof document !== 'object'){
-      return Promise.reject(new Error(
-        `Failed to save non- object in schema '${this.schema}'`
-      ));
-    }
-    document.id = uuid();
-    let path = `${this.path}/${document.id}.json`;
-    return writeFilePromise(
-      path, 
-      JSON.stringify(document)
-    ).then(() => {
-      return document;
+        return store.get(saved.id)
+          .then(fromStore => {
+            expect(fromStore).toEqual(saved);
+          });
+      });
+  });
+
+  it('rejects if get is provided a missing id', () => {
+    var store = new Storage('test');
+
+    return expect(store.get('missing'))
+      .rejects.toThrow('Document with id "missing" in schema "test" not found');
+  });
+
+  it('resolves with empty array for getAll on empty store', () => {
+    var store = new Storage('test');
+
+    return store.getAll()
+      .then(results => {
+        expect(results).toEqual([]);
+      });
+  });
+
+  it('resolves with expected array for getAll on non-empty store', () => {
+    var store = new Storage('test');
+
+    var toSave = [
+      { name: 'Craig' },
+      { class: 'COWSAY101' },
+    ];
+
+    return Promise.all(
+      toSave.map(obj => store.save(obj))
+    ).then(saved => {
+      console.log(saved);
+
+      return store.getAll()
+        .then(results => {
+          expect(results).toEqual(saved);
+        });
     });
-  }
-  get(id){
-    let path = `${this.path}/${id}.json`;
-    return readFilePromise(path)
-      .then(data => {
-        return JSON.parse(data);
-      })
-      .catch(err => {
-        if(err.code === 'ENOENT')
-          return Promise.reject(new Error(
-            `Document with id ${id} in schema '${this.schema}' not found`
-          ));
-        return Promise.reject(err);
-      });
-  }
-
-  getAll(){
-    return readdirPromise(this.path)
-      .then(files => {
-        console.log({files});
-        return Promise.all(
-          files.map(file => this.get(file.substring(0, file.length-5)))
-        );
-      })
-      .catch(err => {
-        console.error(err);
-        return[];
-      });
-  }
-}
-module.exports = FilesystemStorage;
-
-function promisify(asyncFunction){
-  return(...args) =>
-    new Promise((resolve, reject) => {
-      asyncFunction(...args, (err, result) => {
-        if(err) {reject(err); }
-        else{resolve(result); }
-      });
-    });
-}
+  });
+});

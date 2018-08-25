@@ -45,7 +45,7 @@ describe('app', () => {
 
 
   describe('api routes', () => {
-    it('can get /api/cowsay', () => {
+    it('can get /api/cows', () => {
       var cows = [
         new Cow({ title: 'test 1', content: 'Peter' }),
         new Cow({ title: 'test 2', content: 'Paul' }),
@@ -53,7 +53,7 @@ describe('app', () => {
       ];
 
       return Promise.all(
-        cows.map(cow => cows.save())
+        cows.map(cow => cow.save())
       ).then(savedCows => {
         return request(app)
           .get('/api/cows')

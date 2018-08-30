@@ -23,19 +23,12 @@ describe('app', () => {
       });
   });
 
-it('returns 400 if it is an invalid req', () => {
-  return request(app)
-  .post('/api/cows')
-  .send({ })
-  .expect(400)
-
-
-
-});
-
-
-
-
+// it('returns 400 if it is an invalid req', () => {
+//   return request(app)
+//   .post('/api/cowsay')
+//   .send([])
+//   .expect(400);
+// });
 
 
   it('respond with 500 for /500', () => {

@@ -1,8 +1,8 @@
 'use strict';
 
 const http = require('http');
-const cowsay = require('cowsay');
-const requestParser = require('./lib/request-parser');
+//const cowsay = require('cowsay');
+//const requestParser = require('./lib/request-parser');
 const router = require('./lib/router');
 
 

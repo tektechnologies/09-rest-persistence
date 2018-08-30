@@ -3,9 +3,9 @@ const requestParser = require('./request-parser');
 const router = exports;
 
 const routes = exports.routes = {};
-
-
 const methods = ['GET','POST','DELETE','PUT'];
+
+
 
 methods.forEach(method => { 
   routes[method] = {};
@@ -14,6 +14,8 @@ methods.forEach(method => {
     routes[method][path] = callback;
   };
 });
+
+
 router.route =(req, res) => {
   return requestParser(req)
     .then(() => { 
